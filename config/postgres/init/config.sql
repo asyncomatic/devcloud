@@ -1,4 +1,4 @@
-CREATE TABLE tests (
+CREATE TABLE jobs (
                        id BIGSERIAL PRIMARY KEY,
                        delay INT,
                        queue TEXT,
