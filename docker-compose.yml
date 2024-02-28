@@ -13,8 +13,9 @@ services:
     image: postgres
     container_name: devcloud_postgres
     environment:
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: devcloud
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     networks:
       - 'devcloud'
     ports:
@@ -64,9 +65,9 @@ services:
       KAFKA_CLIENT_ID: devcloud
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: devcloud
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
       SCHEDULER_PORT: 8080
       SCHEDULER_JOBS_ROUTE: /jobs
-      SCHEDULER_AUTH_TOKEN: supersecrettoken
+      SCHEDULER_AUTH_TOKEN: ${SCHEDULER_AUTH_TOKEN}
