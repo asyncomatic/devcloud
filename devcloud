@@ -1,0 +1,110 @@
+#!/bin/sh
+
+usage() {
+  echo "Usage: devcloud [ install | update | start | stop | restart | create-topic ]"
+}
+
+update() {
+  for i in `cat docker-compose.yml | grep 'image:' | awk '{print $2}'`
+  do
+    docker pull $i
+  done
+
+}
+
+status() {
+  docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+}
+
+logs() {
+  docker compose logs -f "$@"
+}
+
+install() {
+  rm -rf .env
+
+  echo ""
+  echo "Please provide values for the specified environment variables, or hit <Enter> to accept the defaults:"
+  echo ""
+
+  printf "POSTGRES_USER [default: 'postgres']: "
+  read -r user
+  [ -z "${user}" ] && user=postgres
+  echo "POSTGRES_USER=$user" >> .env
+
+  printf "POSTGRES_PASSWORD [default: 'password']: "
+  read -r pass
+  [ -z "${pass}" ] && pass=password
+  echo "POSTGRES_PASSWORD=$pass" >> .env
+
+  printf "POSTGRES_DB [default: 'devcloud']: "
+  read -r db
+  [ -z "${db}" ] && db=devcloud
+  echo "POSTGRES_DB=$db" >> .env
+
+  printf "SCHEDULER_AUTH_TOKEN [default: none]: "
+  read -r token
+  echo "SCHEDULER_AUTH_TOKEN=$token" >> .env
+
+  echo ""
+  echo "These may be updated by re-running 'install', or editing the .env file directly"
+  echo ""
+
+  update
+}
+
+start() {
+  if [ $# -eq 0 ]; then
+    for s in zookeeper kafka postgres scheduler
+    do
+      docker compose up -d $s
+      sleep 10
+    done
+
+  else
+    docker compose up -d $1
+
+  fi
+}
+
+stop() {
+  if [ $# -eq 0 ]; then
+    for s in scheduler postgres kafka zookeeper
+    do
+      docker kill devcloud_$s
+      docker rm devcloud_$s
+    done
+
+  else
+    docker kill devcloud_$1
+    docker rm devcloud_$1
+
+  fi
+}
+
+restart() {
+  stop "$@"
+  start "$@"
+}
+
+create_topic() {
+  if [ $# -eq 0 ]; then
+    echo "Usage: devcloud create-topic <topic-name>"
+
+  else
+    docker exec -it devcloud_kafka kafka-topics --bootstrap-server kafka:9092 --create --topic $1
+
+  fi
+}
+
+if [ $# -eq 0 ]; then
+  usage
+else
+  fn=$(printf '%s' "$1" | sed -e 's/-/_/g')
+  shift
+  if type "$fn" 2>/dev/null | grep -q 'function'; then
+    $fn "$@"
+  else
+    usage
+  fi
+fi

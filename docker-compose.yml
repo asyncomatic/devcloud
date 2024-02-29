@@ -10,7 +10,7 @@ volumes:
 
 services:
   postgres:
-    image: postgres
+    image: postgres:16.2
     container_name: devcloud_postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -24,7 +24,7 @@ services:
       - ./config/postgres/init:/docker-entrypoint-initdb.d
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:7.6.0
     container_name: devcloud_zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
@@ -35,7 +35,7 @@ services:
       - "2181:2181"
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.6.0
     container_name: devcloud_kafka
     depends_on:
       - zookeeper
