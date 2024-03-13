@@ -4,7 +4,7 @@ usage() {
   echo "Usage: devcloud [ install | update | start | stop | restart | create-topic ]"
 }
 
-update() {
+update_images() {
   for i in `cat docker-compose.yml | grep 'image:' | awk '{print $2}'`
   do
     docker pull $i
@@ -12,15 +12,7 @@ update() {
 
 }
 
-status() {
-  docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-}
-
-logs() {
-  docker compose logs -f "$@"
-}
-
-install() {
+reset_config() {
   rm -rf .env
 
   echo ""
@@ -51,6 +43,11 @@ install() {
   echo ""
 
   update
+}
+
+install() {
+  reset_config
+  update_images
 }
 
 start() {
@@ -85,6 +82,14 @@ stop() {
 restart() {
   stop "$@"
   start "$@"
+}
+
+status() {
+  docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+}
+
+logs() {
+  docker compose logs -f "$@"
 }
 
 create_topic() {
